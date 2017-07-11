@@ -22,16 +22,16 @@ def init():
 #########################################################
     
 for w in range(1,2):
-    nx = 5001
+    nx = 10001
     dx = length / float(nx - 1)
-    nt = 1600   #the number of timesteps we want to calculate
-    Pe = 0.01       #6993006
+    nt = 10000   #the number of timesteps we want to calculate
+    Pe = 10.0
     Pe2 = 0.1 
     lamb = 1.37
     dt = 0.000001
     Length = 100.0
-    kappa = 0.143
-    Q = 0.143*0.006
+    kappa = 0.143E-6
+    Q = (0.143*0.006)*10**-6
     phi = 0.01
     rho_l = 1000.0 #Density of liquid
     L = 2260.0     #Latent Heat of vaporization
@@ -55,7 +55,7 @@ for w in range(1,2):
     
     P = numpy.ones(nx)
     Pn = numpy.ones(nx)
-    P[0] = 0
+    P[0] = 0.01
     
     for n in range(nt):  #iterate through time
     #def animate(j):
@@ -65,13 +65,13 @@ for w in range(1,2):
        
             #T[i] = Tn[i] - lamb * ((dt[i]-dt[i-1]) /(dx[i]-dx[i-1])) * (Tn[i] - Tn[i-1]) +  ((dt[i]-dt[i-1]) / (dx[i]-dx[i-1])**2) * (1/Pe) * (Tn[i+1] - 2 * Tn[i] + Tn[i-1])
             T[i] = Tn[i] - lamb * (1/Length) * (dt /dx) * (Tn[i] - Tn[i-1]) + (1/Length**2)*(dt / dx**2) * (1/Pe) * (Tn[i+1] - 2 * Tn[i] + Tn[i-1])
-#            if T[i] >= 1.0:
-#                constant = (f*rho_l*L*Q*Length)/(dx*i*kappa*rho_p*C_p)
-#                T[i] = Tn[i] - lamb * (1/Length) * (dt /dx) * (Tn[i] - Tn[i-1]) + (1/Length**2)*(dt / dx**2) * (1/Pe2) * ((2*Tn[i]-Tn[i-1]-constant*dx) - 2 * Tn[i] + Tn[i-1])
-#            
+            if T[i] >= 1.0 and T[i-1]<=1:
+                constant = (f*rho_l*L*Q*Length)/(dx*i*kappa*rho_p*C_p)
+                T[i] = Tn[i] - lamb * (1/Length) * (dt /dx) * (Tn[i] - Tn[i-1]) + (1/Length**2)*(dt / dx**2) * (1/Pe2) * ((2*Tn[i]-Tn[i-1]-constant*dx) - 2 * Tn[i] + Tn[i-1])
+            
             theta[i] = (T[i] - 0)/(1-0)
             
-            P[i] = ((k/(phi*Length**2))*(((1/Length**2)*((Pn[i]/Tn[i])-(Pn[i-1]/Tn[i-1]))*(Pn[i]-Pn[i-1]))/dx**2)+((1/Length**2)*(Pn[i]/Tn[i])*((Pn[i+1]-2*Pn[i]+Pn[i-1])/dx**2))*dt+(Pn[i]/Tn[i]))*T[i]
+            P[i] = ((kappa/(phi*Length**2))*(((1/Length**2)*((Pn[i]/Tn[i])-(Pn[i-1]/Tn[i-1]))*(Pn[i]-Pn[i-1]))/dx**2)+((1/Length**2)*(Pn[i]/Tn[i])*((Pn[i+1]-2*Pn[i]+Pn[i-1])/dx**2))*dt+(Pn[i]/Tn[i]))*T[i]
     
     #        line.set_data(numpy.linspace(0, length, nx), theta)
     #        
