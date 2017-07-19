@@ -25,9 +25,9 @@ def init():
 #########################################################
     
 for w in range(1,2):
-    nx = 501                   # Number of mesh points
+    nx = 1001                   # Number of mesh points
     dx = length / float(nx - 1) # Distance between mesh points
-    nt = 2400                     # The number of timesteps we want to calculate
+    nt = 1000                     # The number of timesteps we want to calculate
     dt = 0.0001                   # Size of the time steps
     
     Stg = 1000.0                  # Stanton Number of the gas phase
@@ -63,28 +63,29 @@ for w in range(1,2):
         Tsn = Ts.copy() ##copy the existing values of T into Tn
         
         for i in range(1, nx - 1):
-            Tl[i] = Tln[i] - Stg * dt * (Tln[i]-Tsn[i]) - (dt/float(dx))*(Tln[i]-Tln[i-1])
-            Ts[i] = Tsn[i] - Sts * dt * (Tln[i]-Tsn[i])
-            
-            if Tl[i]>1.0:
+           
+            if Tl[i]>=1.0:
                 rho[i] = 1.0
-                v[i] = v[i-1]
-            
-            if Tl[i]<1.0 and Tl[i]>Tsat:
+                v[i] = 1.0
+#                v[i] = v[i-1]
+                Tl[i] = Tln[i] - Stg * dt * (Tln[i]-Tsn[i]) - (dt/float(dx))*(Tln[i]-Tln[i-1])
+                Ts[i] = Tsn[i] - Sts * dt * (Tln[i]-Tsn[i])
+            elif Tl[i]<Tsat+0.01 and Tl[i]>Tsat:
                 rho[i] = 1 + (1-(Tl[i]-Tsat)/delta_theta)*rho_lv
                 dTdt[i] = -Stjump*(Tl[i]-Ts[i])-(Tl[i]-Tl[i-1])/dx
                 v[i] = v[i-1] + (((rho_lv/delta_theta)*(dTdt[i]+v[i-1]*(Tl[i]-Tl[i-1])/dx))/rho[i])*dx
                 dvdx[i] = (((rho_lv/delta_theta)*(dTdt[i]+v[i]*(Tl[i]-Tl[i-1])/dx))/rho[i])
                 f[i] = (rho_lv/delta_theta)*(Tl[i]-Tsat)*(dTdt[i]+v[i]*((Tl[i]-Tl[i-1])/dx))
                 Tl[i] = Tl[i] + dt*((Stjump*(-Tl[i]+Ts[i]))/rho[i]+f[i]/rho[i]-(v[i]*(Tl[i]-Tl[i-1])/dx)-(Tl[i]-Tsat)*dvdx[i])
-                Ts[i] = Ts[i-1] + Sts * dt * (Tl[i]-Ts[i])
-            if Ts[i] < 0.99:
+                Ts[i] = Ts[i] + Sts * dt * (Tl[i]-Ts[i])
+            elif Tl[i] < Tsat:
                 rho[i] = 141.0
-                v[i] = v[i-1]*rho[i-1]/rho[i]
+                v[i] = 1.0/141.0
+#                v[i] = v[i-1]
                 Tl[i] = Tl[i] - Stl * dt * (Tl[i]-Ts[i]) - (dt/dx)*(Tl[i]-Tl[i-1])
                 Ts[i] = Ts[i] + Sts * dt * (Tl[i]-Ts[i])
             v[nx-1] = v[nx-2]
-            
+            rho[nx-1] = rho[nx-2]
 
                 
     #        line.set_data(numpy.linspace(0, length, nx), theta)
